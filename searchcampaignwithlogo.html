@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Campaign Search</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100px; /* Adjust size as needed */
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            width: 50%;
+            padding: 4px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Add the logo here -->
+        <img src="https://mma.prnewswire.com/media/898436/textellent_logo.jpg?p=facebook" alt="Textellent Inc. Logo" class="logo">
+
+        <h2>10DLC Campaign Search</h2>
+        <input type="text" id="clientId" placeholder="Enter Client ID">
+        <button onclick="searchCampaign()">Search</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Using the provided Google Sheets API Key and Spreadsheet ID
+        const API_KEY = 'AIzaSyBRMCQ4Mao633LFc0Vip0UGPfrV4zIXht0';
+        const SPREADSHEET_ID = '1YvrNHz6xZlXArutbWlkeTA7Xwd7F5a1O2wA9iunko78';
+        const RANGE = 'Main9-13!A:I';  // Adjusted to the new sheet name
+
+        async function searchCampaign() {
+            const clientId = document.getElementById('clientId').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
+
+            if (!clientId) {
+                resultsDiv.innerHTML = 'Please enter a Client ID.';
+                return;
+            }
+
+            try {
+                // Fetch data from Google Sheets
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/1YvrNHz6xZlXArutbWlkeTA7Xwd7F5a1O2wA9iunko78/values/Main9-13?key=AIzaSyBRMCQ4Mao633LFc0Vip0UGPfrV4zIXht0`);
+                const data = await response.json();
+                
+                // Find campaigns for the given Client ID
+                const rows = data.values;
+                const campaigns = rows.filter(row => row[0] === clientId).map(row => row[8]); // Column A is index 0, Column I is index 8
+
+                // Display results
+                if (campaigns.length > 0) {
+                    resultsDiv.innerHTML = `<h3>Campaign:</h3><ul>${campaigns.map(campaign => `<li>${campaign}</li>`).join('')}</ul>`;
+                } else {
+                    resultsDiv.innerHTML = 'Client ID not found.';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                resultsDiv.innerHTML = 'Error fetching data. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
