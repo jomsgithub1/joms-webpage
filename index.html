@@ -3,91 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets Campaign Search</title>
+    <title>Client Campaign Search</title>
     <style>
-        /* Basic styling */
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 80vh;
-            background-color: #f4f4f4;
+            height: 100vh;
+            margin: 0;
+            background-color: #337ab7;
         }
 
         .container {
+            text-align: center;
             background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-
-        .logo {
-            width: 100px; /* Adjust size as needed */
-            margin-bottom: 20px;
         }
 
         input, button {
-            width: 50%;
-            padding: 4px;
-            margin: 10px 0;
-            font-size: 16px;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
-        #results {
-            margin-top: 20px;
+        #result {
+            margin-top: 0.2px;
+            white-space: pre-line; /* Preserve line breaks */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Add the logo here -->
-        <img src="https://mma.prnewswire.com/media/898436/textellent_logo.jpg?p=facebook" alt="Textellent Inc. Logo" class="logo">
-
+        <div class="container">
+        <img fetchpriority="high" width="136" height="51" class="img-fluid mr-auto d-block" src="https://textellent.com/wp-content/uploads/2024/02/logo_textellent.webp" alt="Textellent" title="Textellent">
         <h2>10DLC Campaign Search</h2>
         <input type="text" id="clientId" placeholder="Enter Client ID">
-        <button onclick="searchCampaign()">Search</button>
-        <div id="results"></div>
+        <button id="searchButton">Search</button>
+        <div id="result"></div>
     </div>
-
     <script>
-        // Using the provided Google Sheets API Key and Spreadsheet ID
-        const API_KEY = 'AIzaSyBRMCQ4Mao633LFc0Vip0UGPfrV4zIXht0';
-        const SPREADSHEET_ID = '1YvrNHz6xZlXArutbWlkeTA7Xwd7F5a1O2wA9iunko78';
-        const RANGE = 'Main9-13!A:I';  // Adjusted to the new sheet name
-
-        async function searchCampaign() {
+        function searchCampaign() {
             const clientId = document.getElementById('clientId').value;
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = ''; // Clear previous results
+            const apiKey = 'AIzaSyBRMCQ4Mao633LFc0Vip0UGPfrV4zIXht0';
+            const spreadsheetId = '1YvrNHz6xZlXArutbWlkeTA7Xwd7F5a1O2wA9iunko78';
+            const range = 'Main9-13!A:R'; // Fetch columns A through R
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
-            if (!clientId) {
-                resultsDiv.innerHTML = 'Please enter a Client ID.';
-                return;
-            }
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const rows = data.values;
+                    let result = '\nClient ID not found.';
 
-            try {
-                // Fetch data from Google Sheets
-                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/1YvrNHz6xZlXArutbWlkeTA7Xwd7F5a1O2wA9iunko78/values/Main9-13?key=AIzaSyBRMCQ4Mao633LFc0Vip0UGPfrV4zIXht0`);
-                const data = await response.json();
-                
-                // Find campaigns for the given Client ID
-                const rows = data.values;
-                const campaigns = rows.filter(row => row[0] === clientId).map(row => row[8]); // Column A is index 0, Column I is index 8
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i][0] === clientId) {
+                            const campaignId = rows[i][8]; // Column I
+                            const columnM = rows[i][12]; // Column M
 
-                // Display results
-                if (campaigns.length > 0) {
-                    resultsDiv.innerHTML = `<h3>Campaign:</h3><ul>${campaigns.map(campaign => `<li>${campaign}</li>`).join('')}</ul>`;
-                } else {
-                    resultsDiv.innerHTML = 'Client ID not found.';
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                resultsDiv.innerHTML = 'Error fetching data. Please try again.';
-            }
+                            if (campaignId && campaignId.toLowerCase() !== 'null') {
+                                result = `\nCampaign ID: ${campaignId}`;
+                            } else {
+                                result = `\nCampaign ID: null\n\n`;
+
+                                if (columnM === 'PP') {
+                                    const ppBrand = rows[i][13]; // Column N
+                                    const ppCampaign = rows[i][14]; // Column O
+                                    const vettingResult = rows[i][17]; // Column R
+                                    result += `Private Profit Brand: ${ppBrand}\n\nPrivate Profit Campaign: ${ppCampaign}\n\nVetting Result: ${vettingResult}`;
+                                } else if (columnM === 'SP') {
+                                    const spBrand = rows[i][15]; // Column P
+                                    const spCampaign = rows[i][14]; // Column O
+                                    const vettingResult = rows[i][17]; // Column R
+                                    result += `Sole Proprietor Brand: ${spBrand}\n\nSole Proprietor Campaign: ${spCampaign}\n\nVetting Result: ${vettingResult}`;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    document.getElementById('result').innerText = result;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('result').innerText = 'Error fetching data. Please try again.';
+                });
         }
+
+        document.getElementById('searchButton').addEventListener('click', searchCampaign);
+        document.getElementById('clientId').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchCampaign();
+            }
+        });
     </script>
 </body>
 </html>
