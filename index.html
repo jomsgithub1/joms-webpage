@@ -34,12 +34,6 @@
             margin-top: 0.2px;
             white-space: pre-line; /* Preserve line breaks */
         }
-        .searchButton {
-            cursor: pointer;
-        }    
-        .searchButton:hover {background-color: rgb(3, 94, 199);
-            color: white;
-        }
   </style>
 </head>
 <body>
@@ -47,7 +41,7 @@
         <img fetchpriority="high" width="136" height="51" class="img-fluid mr-auto d-block" src="https://textellent.com/wp-content/uploads/2024/02/logo_textellent.webp" alt="Textellent" title="Textellent">
         <h2>10DLC Campaign Search</h2>
         <input type="text" id="clientId" placeholder="Enter Client ID">
-        <button class="searchButton">Search</button>
+        <button id="searchButton">Search</button>
         <div id="result"></div>
     </div>
     <script>
