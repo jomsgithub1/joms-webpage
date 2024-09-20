@@ -33,7 +33,7 @@
         #result {
             margin-top: 0.2px;
             white-space: pre-line; /* Preserve line breaks */
-        }
+}
         button:hover {background-color: rgb(3, 94, 199);
             color: white;
             cursor: pointer;
@@ -65,7 +65,7 @@
                 })
                 .then(data => {
                     const rows = data.values;
-                    let result = '\nClient ID not found.';
+                    let result = '\n<strong>Client ID not found.</strong>';
 
                     for (let i = 1; i < rows.length; i++) {
                         if (rows[i][0] === clientId) {
@@ -73,31 +73,31 @@
                             const columnM = rows[i][12]; // Column M
 
                             if (campaignId && campaignId.toLowerCase() !== 'null') {
-                                result = `\nCampaign ID: ${campaignId}`;
+                                result = `\n<strong>Campaign ID:</strong> ${campaignId}`;
                             } else {
-                                result = `\nCampaign ID: null\n\n`;
+                                result = `\n<strong>Campaign ID:</strong> null\n\n`;
 
                                 if (columnM === 'PP') {
                                     const ppBrand = rows[i][13]; // Column N
                                     const ppCampaign = rows[i][14]; // Column O
                                     const vettingResult = rows[i][17]; // Column R
-                                    result += `Private Profit Brand: ${ppBrand}\n\nPrivate Profit Campaign: ${ppCampaign}\n\nVetting Result: ${vettingResult}`;
+                                    result += `<strong>Private Profit Brand:</strong> ${ppBrand}\n\n<strong>Private Profit Campaign:</strong> ${ppCampaign}\n\n<strong>Vetting Result:</strong> ${vettingResult}`;
                                 } else if (columnM === 'SP') {
                                     const spBrand = rows[i][15]; // Column P
                                     const spCampaign = rows[i][14]; // Column O
                                     const vettingResult = rows[i][17]; // Column R
-                                    result += `Sole Proprietor Brand: ${spBrand}\n\nSole Proprietor Campaign: ${spCampaign}\n\nVetting Result: ${vettingResult}`;
+                                    result += `<strong>Sole Proprietor Brand:</strong> ${spBrand}\n\n<strong>Sole Proprietor Campaign:</strong> ${spCampaign}\n\n<strong>Vetting Result:</strong> ${vettingResult}`;
                                 }
                             }
                             break;
                         }
                     }
 
-                    document.getElementById('result').innerText = result;
+                    document.getElementById('result').innerHTML = result;
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
-                    document.getElementById('result').innerText = 'Error fetching data. Please try again.';
+                    document.getElementById('result').innerHTML = 'Error fetching data. Please try again.';
                 });
         }
 
